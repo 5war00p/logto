@@ -1,6 +1,7 @@
-import { Language, Languages } from '@logto/schemas';
+import { CreateLanguage, Language, Languages } from '@logto/schemas';
 import { sql } from 'slonik';
 
+import { buildInsertInto } from '@/database/insert-into';
 import { convertToIdentifiers } from '@/database/utils';
 import envSet from '@/env-set';
 
@@ -12,3 +13,11 @@ export const findLanguageByKey = async (languageKey: string): Promise<Language> 
     from ${table}
     where ${fields.key} = ${languageKey}
   `);
+
+export const upsertLanguage = buildInsertInto<CreateLanguage, Language>(Languages, {
+  returning: true,
+  onConflict: {
+    fields: [fields.key],
+    setExcludedFields: [fields.translation],
+  },
+});

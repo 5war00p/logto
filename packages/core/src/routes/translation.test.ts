@@ -31,8 +31,11 @@ const findLanguageByKey = jest.fn(async (key: string) => {
   return mockLanguage;
 });
 
+const upsertLanguage = jest.fn(async (language: Language) => language);
+
 jest.mock('@/queries/language', () => ({
   findLanguageByKey: async (key: string) => findLanguageByKey(key),
+  upsertLanguage: async (language: Language) => upsertLanguage(language),
 }));
 
 describe('translationRoutes', () => {
@@ -61,6 +64,25 @@ describe('translationRoutes', () => {
       const response = await translationRequest.get(`/translations/${languageKey}`);
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({});
+    });
+  });
+
+  describe('PUT /translations/:languageKey', () => {
+    it('should call upsertLanguage once', async () => {
+      const languageKey = 'en-US';
+      const response = await translationRequest
+        .put(`/translations/${languageKey}`)
+        .send(enUsTranslation);
+      expect(upsertLanguage).toBeCalledTimes(1);
+    });
+
+    it('should return translation after upserting', async () => {
+      const languageKey = 'en-US';
+      const response = await translationRequest
+        .put(`/translations/${languageKey}`)
+        .send(enUsTranslation);
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual(enUsTranslation);
     });
   });
 });

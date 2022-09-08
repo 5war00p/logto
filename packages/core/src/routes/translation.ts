@@ -2,7 +2,7 @@ import { Languages, translationGuard } from '@logto/schemas';
 import { NotFoundError } from 'slonik';
 
 import koaGuard from '@/middleware/koa-guard';
-import { findLanguageByKey } from '@/queries/language';
+import { findLanguageByKey, upsertLanguage } from '@/queries/language';
 
 import { AuthedRouter } from './types';
 
@@ -30,6 +30,25 @@ export default function translationRoutes<T extends AuthedRouter>(router: T) {
       } = ctx.guard;
 
       const { translation } = await getLanguage(key);
+      ctx.body = translation;
+
+      return next();
+    }
+  );
+
+  router.put(
+    '/translations/:key',
+    koaGuard({
+      params: Languages.createGuard.pick({ key: true }),
+      body: translationGuard,
+    }),
+    async (ctx, next) => {
+      const {
+        params: { key },
+        body,
+      } = ctx.guard;
+
+      const { translation } = await upsertLanguage({ key, translation: body });
       ctx.body = translation;
 
       return next();
