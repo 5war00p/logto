@@ -118,7 +118,7 @@ const generate = async () => {
           .map(({ tsName, values }) =>
             [
               `export enum ${tsName} {`,
-              ...values.map((value) => `  ${value} = '${value}',`),
+              ...values.map((value) => `  ${value.replaceAll('-', '')} = '${value}',`),
               '}',
             ].join('\n')
           )
